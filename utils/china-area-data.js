@@ -10,6 +10,9 @@ export function convertAreaData(code = '86', deepth = Infinity) {
 
     const { code, name } = obj;
     const childrenMap = data[code];
+    
+    code2text[code] = name;
+    text2code[name] = code;
 
     if (!childrenMap) return obj;
 
@@ -22,9 +25,6 @@ export function convertAreaData(code = '86', deepth = Infinity) {
     if (children.length) {
       obj.children = children;
     }
-
-    code2text[code] = name;
-    text2code[name] = code;
 
     return obj;
   }
@@ -39,7 +39,3 @@ export const cityData = convertAreaData('86', 2).children;
 export const regionData = convertAreaData().children;
 
 export { code2text, text2code };
-
-console.log(provinceData);
-console.log(cityData);
-console.log(regionData);
