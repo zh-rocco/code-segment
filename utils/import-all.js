@@ -17,7 +17,7 @@ export default function importAll(context, options = {}) {
   }
 
   return keys.reduce((acc, curr) => {
-    const key = isFunction ? keyTransformFunc(curr) : curr;
+    const key = isFunction(curr) ? keyTransformFunc(curr) : curr;
     acc[key] = useDefault ? context(curr).default : context(curr);
     return acc;
   }, {});
