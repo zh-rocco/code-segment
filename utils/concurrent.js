@@ -1,40 +1,34 @@
 /**
- * @params asyncFuncs {Array} - 要迭代的函数数组
+ * @params asyncFuncs {Array} - 要迭代的数组
  * @params limit {Number} - 并发数量控制数
  * @return {Promise} - 返回一个 Promise 值来确认所有数据是否迭代完成
  */
 var concurrent = (asyncFuncs, limit) => {
   let active = 0
+  let successCount = 0
   const res = []
 
   return new Promise((resolve) => {
-    const _funcs = asyncFuncs.map((func) => {
-      return async function (cb) {
-        console.log('当前并发:', active + 1)
-        active++
-        const r = await func()
-        active--
-        res.push(r)
-        console.log('end func:', r)
-        cb()
-
-        if (res.length === asyncFuncs.length) {
-          resolve(res)
-        }
+    const _funcs = asyncFuncs.map((func, idx) => async function (cb) {
+      active++
+      const r = await func()
+      res[idx] = r
+      successCount++
+      active--
+      cb()
+      if (asyncFuncs.length === successCount) {
+        resolve(res)
       }
     })
 
-    const recursion = (funcs) => {
+    const queue = (funcs) => {
       if (funcs.length && active < limit) {
-        funcs.shift()(() => {
-          console.log('---')
-          recursion(funcs)
-        })
-        recursion(funcs)
+        funcs.shift()(() => void queue(funcs))
+        queue(funcs)
       }
     }
 
-    recursion(_funcs)
+    queue(_funcs)
   })
 }
 
@@ -42,7 +36,7 @@ var sleep = (duration) => new Promise((resolve) => void setTimeout(resolve, dura
 
 const funcs = Array.from({ length: 20 }, (curr, idx) => async () => {
   console.log('start func: ', idx)
-  await sleep(300)
+  await sleep(Math.random() * 5000)
   return idx
 })
 
